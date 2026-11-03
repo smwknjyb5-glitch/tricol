@@ -1,0 +1,413 @@
+  <!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>محاكاة تعليمية: الضوء الثلاثي</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Share+Tech+Mono&display=swap');
+
+  :root{
+    --bg:#0c1220;
+    --panel:#141b2c;
+    --panel-hi:#1b2438;
+    --asphalt:#2a2e36;
+    --red:#ff4d4d;
+    --amber:#ffb340;
+    --green:#33d18a;
+    --text-dim:#8a92a6;
+  }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none;}
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background:radial-gradient(ellipse at 50% -10%, #182136 0%, #070a12 62%);
+    font-family:'Tajawal', sans-serif;
+    color:#eee;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:28px 16px 50px;
+  }
+
+  h1{
+    font-size:15px;
+    font-weight:700;
+    color:var(--text-dim);
+    text-transform:uppercase;
+    letter-spacing:.5px;
+    margin:0 0 22px;
+  }
+
+  .stage{
+    display:flex;
+    gap:32px;
+    flex-wrap:wrap;
+    justify-content:center;
+    max-width:880px;
+  }
+
+  /* ============ الإشارة ============ */
+  .signal-col{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:16px;
+  }
+
+  .pole-scene{
+    width:220px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+
+  .light-box{
+    background:linear-gradient(160deg,#20263a,#11172a);
+    border-radius:20px;
+    padding:16px 14px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    box-shadow:0 20px 40px -14px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .lamp{
+    width:78px; height:78px;
+    border-radius:50%;
+    background:radial-gradient(circle at 38% 32%, #2a2f3d, #14171f 72%);
+    box-shadow:inset 0 0 0 4px #0a0c12;
+    position:relative;
+    transition:box-shadow .3s ease;
+  }
+  .lamp.on-red{ background:radial-gradient(circle at 38% 32%, #ff8a8a, var(--red) 60%); box-shadow:0 0 34px 8px rgba(255,77,77,.75), inset 0 0 0 4px #0a0c12; }
+  .lamp.on-amber{ background:radial-gradient(circle at 38% 32%, #ffd28a, var(--amber) 60%); box-shadow:0 0 34px 8px rgba(255,179,64,.75), inset 0 0 0 4px #0a0c12; }
+  .lamp.on-green{ background:radial-gradient(circle at 38% 32%, #8af0c4, var(--green) 60%); box-shadow:0 0 34px 8px rgba(51,209,138,.75), inset 0 0 0 4px #0a0c12; }
+
+  .pole{
+    width:10px;
+    height:70px;
+    background:linear-gradient(90deg,#3a3f4d,#1c1f27);
+    border-radius:2px;
+  }
+  .base{
+    width:60px; height:12px;
+    background:#1c1f27;
+    border-radius:6px;
+  }
+
+  /* شريط تقدم الوقت */
+  .progress-wrap{
+    width:220px;
+    height:8px;
+    border-radius:5px;
+    background:var(--panel);
+    overflow:hidden;
+  }
+  .progress-bar{
+    height:100%;
+    width:0%;
+    border-radius:5px;
+    transition:width .1s linear, background .2s ease;
+  }
+  .countdown{
+    font-family:'Share Tech Mono', monospace;
+    font-size:12px;
+    color:var(--text-dim);
+    text-align:center;
+  }
+
+  /* ============ مشهد الطريق المصغّر ============ */
+  .mini-road{
+    width:220px;
+    height:52px;
+    background:var(--asphalt);
+    border-radius:10px;
+    position:relative;
+    overflow:hidden;
+  }
+  .mini-road .stop-line{
+    position:absolute; left:60%; top:0; bottom:0;
+    width:3px;
+    background:#eee;
+  }
+  .mini-car{
+    position:absolute;
+    top:50%;
+    right:6px;
+    transform:translateY(-50%);
+    width:34px; height:16px;
+    border-radius:5px;
+    background:linear-gradient(160deg,#33d18a,#1c8f5f);
+    transition:right .3s ease, background .3s ease;
+  }
+  .mini-car::before, .mini-car::after{
+    content:'';
+    position:absolute; top:-5px;
+    width:6px; height:6px; border-radius:50%;
+    background:#111;
+  }
+  .mini-car::before{ right:5px; }
+  .mini-car::after{ left:5px; }
+
+  /* ============ لوحة التحكم ============ */
+  .control-col{
+    width:230px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .mode-toggle{
+    display:flex;
+    background:var(--panel);
+    border-radius:12px;
+    padding:4px;
+    gap:4px;
+  }
+  .mode-toggle button{
+    flex:1;
+    border:none;
+    border-radius:9px;
+    padding:9px 0;
+    font-family:'Tajawal', sans-serif;
+    font-size:12.5px;
+    font-weight:700;
+    background:transparent;
+    color:var(--text-dim);
+    cursor:pointer;
+  }
+  .mode-toggle button.active{
+    background:var(--panel-hi);
+    color:#eee;
+  }
+
+  .manual-buttons{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .manual-btn{
+    border:none;
+    border-radius:10px;
+    padding:11px;
+    font-family:'Tajawal', sans-serif;
+    font-weight:700;
+    font-size:13px;
+    color:#12141a;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    box-shadow:0 3px 0 rgba(0,0,0,.35);
+    opacity:.55;
+    transition:opacity .15s ease, transform .07s ease;
+  }
+  .manual-btn.active{ opacity:1; }
+  .manual-btn:active{ transform:translateY(2px); }
+  .manual-btn.red{ background:var(--red); }
+  .manual-btn.amber{ background:var(--amber); }
+  .manual-btn.green{ background:var(--green); }
+  .manual-buttons.disabled .manual-btn{ pointer-events:none; opacity:.25; }
+
+  /* ============ بطاقات الشرح ============ */
+  .cards{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .card{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--panel);
+    border-radius:12px;
+    padding:10px 12px;
+    border-inline-start:4px solid transparent;
+    transition:background .2s ease, border-color .2s ease;
+  }
+  .card .dot{
+    width:16px; height:16px;
+    border-radius:50%;
+    flex-shrink:0;
+  }
+  .card.red .dot{ background:var(--red); }
+  .card.amber .dot{ background:var(--amber); }
+  .card.green .dot{ background:var(--green); }
+  .card .txt b{ display:block; font-size:12.5px; }
+  .card .txt span{ font-size:10.5px; color:var(--text-dim); }
+  .card.active.red{ background:rgba(255,77,77,.14); border-color:var(--red); }
+  .card.active.amber{ background:rgba(255,179,64,.14); border-color:var(--amber); }
+  .card.active.green{ background:rgba(51,209,138,.14); border-color:var(--green); }
+
+  .hint{
+    margin-top:26px;
+    font-size:12px;
+    color:var(--text-dim);
+    text-align:center;
+    max-width:460px;
+    line-height:1.9;
+  }
+</style>
+</head>
+<body>
+
+<h1>محاكاة تعليمية: الضوء الثلاثي</h1>
+
+<div class="stage">
+
+  <!-- الإشارة والمشهد المصغّر -->
+  <div class="signal-col">
+    <div class="pole-scene">
+      <div class="light-box">
+        <div class="lamp" id="lampRed"></div>
+        <div class="lamp" id="lampAmber"></div>
+        <div class="lamp" id="lampGreen"></div>
+      </div>
+      <div class="pole"></div>
+      <div class="base"></div>
+    </div>
+
+    <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="countdown" id="countdownText">الوضع: تلقائي</div>
+
+    <div class="mini-road">
+      <div class="stop-line"></div>
+      <div class="mini-car" id="miniCar"></div>
+    </div>
+  </div>
+
+  <!-- التحكم والبطاقات -->
+  <div class="control-col">
+
+    <div class="mode-toggle">
+      <button id="modeAuto" class="active">تلقائي</button>
+      <button id="modeManual">يدوي</button>
+    </div>
+
+    <div class="manual-buttons disabled" id="manualButtons">
+      <button class="manual-btn red" data-color="red">🔴 أحمر — قف</button>
+      <button class="manual-btn amber" data-color="amber">🟡 أصفر — استعد</button>
+      <button class="manual-btn green" data-color="green">🟢 أخضر — انطلق</button>
+    </div>
+
+    <div class="cards">
+      <div class="card red" id="cardRed">
+        <span class="dot"></span>
+        <div class="txt"><b>الأحمر</b><span>توقف تام، لا تتحرك حتى يتغير الضوء</span></div>
+      </div>
+      <div class="card amber" id="cardAmber">
+        <span class="dot"></span>
+        <div class="txt"><b>الأصفر</b><span>استعد، الإشارة ستتغيّر قريبًا</span></div>
+      </div>
+      <div class="card green" id="cardGreen">
+        <span class="dot"></span>
+        <div class="txt"><b>الأخضر</b><span>الطريق آمن، يمكنك التقدّم</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p class="hint">في الوضع التلقائي تتغيّر الإشارة بنفسها حسب مدة كل لون، وشريط التقدّم يوضّح الوقت المتبقي. في الوضع اليدوي اختر لونًا بنفسك لترى السيارة: تتحرك بسرعة مع الأخضر، تتباطأ وتقترب مع الأصفر، وتتوقف تمامًا عند خط التوقف مع الأحمر.</p>
+
+<script>
+(function(){
+  const DURATIONS = { green:4500, amber:1500, red:4000 };
+  const ORDER = ['green','amber','red'];
+
+  const lamps = { red:document.getElementById('lampRed'), amber:document.getElementById('lampAmber'), green:document.getElementById('lampGreen') };
+  const cards = { red:document.getElementById('cardRed'), amber:document.getElementById('cardAmber'), green:document.getElementById('cardGreen') };
+  const progressBar = document.getElementById('progressBar');
+  const countdownText = document.getElementById('countdownText');
+  const miniCar = document.getElementById('miniCar');
+  const manualButtons = document.getElementById('manualButtons');
+  const modeAutoBtn = document.getElementById('modeAuto');
+  const modeManualBtn = document.getElementById('modeManual');
+
+  const barColor = { red:'#ff4d4d', amber:'#ffb340', green:'#33d18a' };
+
+  // موقع السيارة وسرعة انتقالها لكل لون:
+  // أخضر: تنطلق بسرعة نحو خط التوقف (وتتجاوزه بصريًا لتوحي بالحركة)
+  // أصفر: تتباطأ وتقترب من الخط دون الوصول إليه
+  // أحمر: تتوقف تمامًا عند الخط
+  const carPosition  = { green:'6px', amber:'62px', red:'96px' };
+  const carTransition = { green:'right .35s ease-out', amber:'right .6s ease-in', red:'right .4s ease-in' };
+
+  let mode = 'auto';
+  let current = 'green';
+  let phaseStart = performance.now();
+  let phaseDuration = DURATIONS.green;
+  let orderIndex = 0;
+  let rafId = null;
+
+  function setLight(color){
+    current = color;
+    Object.keys(lamps).forEach(k=>{
+      lamps[k].classList.toggle('on-' + k, k === color);
+      cards[k].classList.toggle('active', k === color);
+    });
+    miniCar.style.transition = carTransition[color] + ', background .3s ease';
+    miniCar.style.right = carPosition[color];
+    progressBar.style.background = barColor[color];
+  }
+
+  function nextPhase(){
+    orderIndex = (orderIndex + 1) % ORDER.length;
+    const color = ORDER[orderIndex];
+    phaseDuration = DURATIONS[color];
+    phaseStart = performance.now();
+    setLight(color);
+  }
+
+  function autoLoop(t){
+    if(mode !== 'auto') return;
+    const elapsed = t - phaseStart;
+    const pct = Math.min(1, elapsed / phaseDuration);
+    progressBar.style.width = (pct*100) + '%';
+    const remain = Math.max(0, Math.ceil((phaseDuration - elapsed)/1000));
+    countdownText.textContent = 'الوضع: تلقائي — تبقّى ' + remain + ' ث';
+    if(elapsed >= phaseDuration) nextPhase();
+    rafId = requestAnimationFrame(autoLoop);
+  }
+
+  function startAuto(){
+    mode = 'auto';
+    modeAutoBtn.classList.add('active');
+    modeManualBtn.classList.remove('active');
+    manualButtons.classList.add('disabled');
+    orderIndex = ORDER.indexOf(current);
+    phaseDuration = DURATIONS[current];
+    phaseStart = performance.now();
+    cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(autoLoop);
+  }
+
+  function startManual(){
+    mode = 'manual';
+    modeManualBtn.classList.add('active');
+    modeAutoBtn.classList.remove('active');
+    manualButtons.classList.remove('disabled');
+    cancelAnimationFrame(rafId);
+    progressBar.style.width = '0%';
+    countdownText.textContent = 'الوضع: يدوي — اختر لونًا';
+  }
+
+  modeAutoBtn.addEventListener('click', startAuto);
+  modeManualBtn.addEventListener('click', startManual);
+
+  manualButtons.querySelectorAll('.manual-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      manualButtons.querySelectorAll('.manual-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      setLight(btn.dataset.color);
+    });
+  });
+
+  setLight('green');
+  startAuto();
+})();
+</script>
+
+</body>
+</html>
